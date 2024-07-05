@@ -1,26 +1,39 @@
 package main
 
 import (
-	"fmt"
-	"strconv"
+	"database/sql"
+	"log"
+
+	"backend_master_class/api"
+	db "backend_master_class/db/sqlc"
+	"backend_master_class/db/util"
+
+	_ "github.com/lib/pq"
 )
 
+/*
+const (
+	dbDriver      = "postgres"
+	dbSource      = "postgresql://root:root@localhost:5432/simple_bank?sslmode=disable"
+	serverAddress = "0.0.0.0:8080"
+)
+*/
 func main() {
-	bedrooms, err := stringToInt("null")
-	fmt.Println(bedrooms)
-	fmt.Println(err)
-
-	if err == nil {
-		filters_NumberOfBedrooms := []int32{int32(bedrooms)}
-		fmt.Println(filters_NumberOfBedrooms)
-	}
-}
-
-func stringToInt(str string) (int, error) {
-	i, err := strconv.Atoi(str)
+	config, err := util.LoadConfig(".")
 	if err != nil {
-		return 0, fmt.Errorf("failed to convert with error: %w", err)
+		log.Fatal("cannot load config:", err)
 	}
 
-	return i, nil
+	conn, err := sql.Open(config.DBDriver, config.DBSource)
+	if err != nil {
+		log.Fatal("cannot connect to db:", err)
+	}
+
+	store := db.NewStore(conn)
+	server := api.NewServer(store)
+
+	err = server.Start(config.ServerAddress)
+	if err != nil {
+		log.Fatal("cannot start server:", err)
+	}
 }
