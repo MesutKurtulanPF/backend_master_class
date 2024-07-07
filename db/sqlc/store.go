@@ -7,12 +7,12 @@ import (
 )
 
 // Store provides all functions to execute db queries and transactions
-type Store interface {
-	Querier
-	TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error)
+type Store interface { // Store arayüzü, bir veritabanı işlemlerini soyutlayan bir arayüzdür ve
+	Querier                                                                         // Querier arayüzünden türeyen tüm metodları içerir  ve
+	TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) // TransferTx metodunu içerir.
 }
 
-// SQLStore provides all functions to execute SQL queries and transactions
+// SQLStore/Store provides all functions to execute SQL queries and transactions
 type SQLStore struct {
 	db *sql.DB
 	*Queries
@@ -43,7 +43,7 @@ func (store *SQLStore) execTx(ctx context.Context, fn func(*Queries) error) erro
 		return err
 	}
 
-	return tx.Commit()
+	return tx.Commit() // Tx is an in-progress database transaction. A transaction must end with a call to [Tx.Commit] or [Tx.Rollback].
 }
 
 // TransferTxParams contains the struct the input parameters of the transfer transaction

@@ -1,12 +1,12 @@
 version: "1"
 packages:
-  - name: "db"
-    path: "./db/sqlc/"
-    queries: "./db/query/"
-    schema: "./db/migration/"
-    engine: "postgresql"
-    emit_json_tags: true
-    emit_prepared_queries: false
-    emit_interface: true
-    emit_exact_table_names: false
-    emit_empty_slices: true
+  - name: "db" # The “name” option here is to tell sqlc what is the name of the Go package that will be generated.
+    path: "./db/sqlc/" # the path to the folder to store the generated golang code files.
+    queries: "./db/query/" # the “queries” option to tell sqlc where to look for the SQL query files.
+    schema: "./db/migration/" # this schema option should point to the folder containing the database schema or migration files.
+    engine: "postgresql" # what database engine we would like to use.
+    emit_json_tags: true # Set the emit_json_tags to “true” if we want sqlc to add JSON tags to the generated structs. Like this -> ID int64 `json:"id"`
+    emit_prepared_queries: false # The emit_prepared_queries tells sqlc to generate codes that work with prepared statement.
+    emit_interface: true # the emit_interface option to tell sqlc to generate Querier interface for the generated package if we want to mock the db
+    emit_exact_table_names: false # Sqlc will try to singularize the table name to use as the model struct name. For example “accounts” table will become “Account” struct. If you set this option to true, the struct name will be “Accounts” instead.
+    emit_empty_slices: true #

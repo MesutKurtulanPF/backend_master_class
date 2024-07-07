@@ -3,14 +3,16 @@ package api
 import (
 	db "backend_master_class/db/sqlc"
 	"database/sql"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/lib/pq"
 )
 
 type createAccountRequest struct {
 	Owner    string `json:"owner" binding:"required"`
-	Currency string `json:"currency" binding:"required,oneof=USD EUR"`
+	Currency string `json:"currency" binding:"required,currency"`
 }
 
 func (server *Server) createAccount(ctx *gin.Context) {
@@ -28,6 +30,13 @@ func (server *Server) createAccount(ctx *gin.Context) {
 
 	account, err := server.store.CreateAccount(ctx, arg)
 	if err != nil {
+		if pqErr, ok := err.(*pq.Error); ok {
+			switch pqErr.Code.Name() {
+			case "foreign_key_violation", "unique_violation":
+				ctx.JSON(http.StatusForbidden, errorResponse(err))
+				return
+			}
+		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -109,4 +118,45 @@ func (server *Server) deleteAccount(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{})
+}
+
+type UpdateAccountRequest struct {
+	ID      int64 `uri:"id" binding:"required,min=1"`       // ID from URI
+	Balance int64 `json:"balance" binding:"required,min=0"` // Balance from Json
+}
+
+func (server *Server) updateAccount(ctx *gin.Context) {
+	var req UpdateAccountRequest
+	if err := ctx.ShouldBindUri(&req); err != nil { // error from URI parameter
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	if err := ctx.ShouldBindJSON(&req); err != nil { // error from Json parameter
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	arg := db.UpdateAccountParams{
+		ID:      req.ID,
+		Balance: req.Balance,
+	}
+
+	fmt.Println("ID from URI:", req.ID)
+	fmt.Println("Balance from JSON:", req.Balance)
+
+	account, err := server.store.UpdateAccount(ctx, arg)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			fmt.Println("ID from URI:", req.ID)
+			fmt.Println("Balance from JSON:", req.Balance)
+			return
+		}
+
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, account)
 }
