@@ -6,16 +6,18 @@ import (
 
 	"backend_master_class/api"
 	db "backend_master_class/db/sqlc"
-	"backend_master_class/db/util"
+	"backend_master_class/util"
 
 	_ "github.com/lib/pq"
 )
 
 /*
 const (
+
 	dbDriver      = "postgres"
 	dbSource      = "postgresql://root:root@localhost:5432/simple_bank?sslmode=disable"
 	serverAddress = "0.0.0.0:8080"
+
 )
 */
 func main() {
@@ -30,7 +32,10 @@ func main() {
 	}
 
 	store := db.NewStore(conn)
-	server := api.NewServer(store)
+	server, err := api.NewServer(config, store)
+	if err != nil {
+		log.Fatal("cannot create server:", err)
+	}
 
 	err = server.Start(config.ServerAddress)
 	if err != nil {

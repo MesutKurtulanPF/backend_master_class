@@ -1,7 +1,7 @@
 package db
 
 import (
-	"backend_master_class/db/util"
+	"backend_master_class/util"
 	"database/sql"
 	"log"
 	"os"

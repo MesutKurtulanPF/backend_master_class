@@ -3,7 +3,7 @@ package api
 import (
 	mockdb "backend_master_class/db/mock"
 	db "backend_master_class/db/sqlc"
-	"backend_master_class/db/util"
+	"backend_master_class/util"
 	"bytes"
 	"database/sql"
 	"encoding/json"
@@ -181,7 +181,7 @@ func TestCreateUserAPI(t *testing.T) {
 			store := mockdb.NewMockStore(ctrl)
 			tc.buildStubs(store)
 
-			server := NewServer(store)
+			server := NewTestServer(t, store)
 			recorder := httptest.NewRecorder()
 
 			// Marshal body data to JSON

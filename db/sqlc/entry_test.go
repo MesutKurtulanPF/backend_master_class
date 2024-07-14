@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"backend_master_class/db/util"
+	"backend_master_class/util"
 
 	"github.com/stretchr/testify/require"
 )
